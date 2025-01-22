@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect } from "react";
 
-interface ComicPanel {
-  prompt: string;
-  caption: string;
-  imageUrl: string;
-}
+// interface ComicPanel {
+//   prompt: string;
+//   caption: string;
+//   imageUrl: string;
+// }
 
 const Home = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
