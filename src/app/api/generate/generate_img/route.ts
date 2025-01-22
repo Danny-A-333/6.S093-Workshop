@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 
+export const maxDuration = 25;
+
 export async function POST(request: Request) {
   try {
     // Validate request body
