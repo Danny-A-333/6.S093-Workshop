@@ -7,7 +7,7 @@ interface ComicPanel {
   imageUrl: string;
 }
 
-export default function Home() {
+const Home = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -135,4 +135,6 @@ export default function Home() {
       </div>
     </main>
   );
-}
+};
+
+export default Home;
