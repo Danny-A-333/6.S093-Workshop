@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 
-export const maxDuration = 25;
+export const maxDuration = 45;
 
 export async function POST(request: Request) {
   try {
