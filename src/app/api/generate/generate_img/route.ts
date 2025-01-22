@@ -49,8 +49,8 @@ export async function POST(request: Request) {
           version: "1eaac30a6af4d4b1ef8f18b51aa1b88b4fba01b58490028c2ddf34cd6ffd5f86",
           input: {
             prompt: prompt,
-            num_inference_steps: 4,
-            guidance_scale: 7.5,
+            num_inference_steps: 8,
+            guidance_scale: 3.5,
             negative_prompt: "ugly, blurry, poor quality, disfigured",
             num_outputs: 1,
             model: "schnell"
