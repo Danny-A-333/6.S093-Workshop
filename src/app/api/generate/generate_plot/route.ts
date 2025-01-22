@@ -1,60 +1,62 @@
 import { NextResponse } from 'next/server';
-import Replicate from 'replicate';
+import OpenAI from 'openai';
+
+// Define the response type
+interface ComicPanel {
+  prompt: string;
+  caption: string;
+}
+
+interface ComicsResponse {
+  comics: ComicPanel[];
+}
 
 export async function POST(request: Request) {
   try {
     const { prompt } = await request.json();
     console.log('Received prompt:', prompt);
     
-    if (!process.env.REPLICATE_API_TOKEN) {
-      console.error('REPLICATE_API_TOKEN is not set in environment variables');
-      throw new Error('Missing Replicate API token');
+    if (!process.env.GITHUB_TOKEN) {
+      throw new Error('Missing GitHub token');
     }
 
-    console.log('Initializing Replicate client...');
-    const replicate = new Replicate({
-      auth: process.env.REPLICATE_API_TOKEN,
+    const client = new OpenAI({
+      apiKey: process.env.GITHUB_TOKEN,
+      baseURL: "https://models.inference.ai.azure.com",
     });
 
-    console.log('Starting image generation with prompt:', prompt);
-    try {
-      // Create and wait for the prediction
-      const prediction = await replicate.predictions.create({
-        version: "1eaac30a6af4d4b1ef8f18b51aa1b88b4fba01b58490028c2ddf34cd6ffd5f86",
-        input: {
-          prompt: prompt,
-          num_inference_steps: 28,
-          guidance_scale: 10,
-          model: "dev"
-        }
-      });
+    const systemPrompt = `
+    Create a 3-panel comic story about a dog's adventure. For each panel, provide:
+    1. An image generation prompt that includes 'FOLEY black dog' and ends with 'realistic style'
+    2. A caption that refers to the dog as 'Foley'
 
-      console.log('Prediction created:', prediction);
-
-      // Wait for the prediction to complete
-      const result = await replicate.wait(prediction);
-      console.log('Prediction result:', result);
-
-      if (!result.output || !Array.isArray(result.output) || result.output.length === 0) {
-        throw new Error('No image generated');
-      }
-
-      return NextResponse.json({ imageUrl: result.output[0] });
-
-    } catch (error) {
-      console.error('Replicate API error:', error);
-      throw error;
+    Format the output as JSON with this structure:
+    {
+        "comics": [
+            {
+                "prompt": "Image generation prompt here",
+                "caption": "Caption text here"
+            }
+        ]
     }
+    `;
+
+    const response = await client.chat.completions.create({
+      model: "gpt-4o",
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ]
+    });
+
+    const storyJson = JSON.parse(response.choices[0].message.content || '') as ComicsResponse;
+    return NextResponse.json(storyJson);
 
   } catch (error) {
-    console.error('API Route error:', {
-      name: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
-    
+    console.error('API Route error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate image' },
+      { error: error instanceof Error ? error.message : 'Failed to generate plot' },
       { status: 500 }
     );
   }
