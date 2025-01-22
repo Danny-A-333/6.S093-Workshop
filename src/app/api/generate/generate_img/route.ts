@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { env } from 'process';
 import Replicate from 'replicate';
 
 export async function POST(request: Request) {
@@ -6,7 +7,7 @@ export async function POST(request: Request) {
     const { prompt } = await request.json();
     console.log('Received prompt:', prompt);
     
-    if (!process.env.REPLICATE_API_TOKEN) {
+    if (!env.REPLICATE_API_TOKEN) {
       console.error('REPLICATE_API_TOKEN is not set in environment variables');
       throw new Error('Missing Replicate API token');
     }
