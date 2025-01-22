@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       console.log('Prediction created:', prediction);
 
       // Wait for the prediction to complete
-      let result = await replicate.wait(prediction);
+      const result = await replicate.wait(prediction);
       console.log('Prediction result:', result);
 
       if (!result.output || !Array.isArray(result.output) || result.output.length === 0) {

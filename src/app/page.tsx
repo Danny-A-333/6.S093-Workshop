@@ -13,7 +13,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [comicPanels, setComicPanels] = useState<ComicPanel[]>([]);
+  // const [comicPanels, setComicPanels] = useState<ComicPanel[]>([]);
 
   useEffect(() => {
     if (isDarkMode) {
