@@ -104,7 +104,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Comic Panels Display */}
+        {/* Comic Panels Display
         {comicPanels.length > 0 && (
           <div className="mt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -121,7 +121,7 @@ export default function Home() {
             </div>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Dark Mode Toggle */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
