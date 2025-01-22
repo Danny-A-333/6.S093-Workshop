@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { env } from 'process';
 import Replicate from 'replicate';
 
 export async function POST(request: Request) {

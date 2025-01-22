@@ -90,7 +90,7 @@ const Home = () => {
         <h1 className="text-3xl font-bold text-center mb-8">Foley Comic Generator</h1>
 
         <p className={`text-center mb-8 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-          Enter your prompt below to generate a comic about Foley's adventures!
+          Enter your prompt below to generate a comic about Foley&apos;s adventures!
         </p>
 
         <div className="space-y-4 mb-8">
