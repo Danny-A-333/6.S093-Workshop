@@ -3,10 +3,10 @@ import Replicate from 'replicate';
 
 export async function POST(request: Request) {
   try {
+    // Validate request body
     const body = await request.json();
     console.log('Raw request body:', body);
 
-    // Handle both formats
     let prompts: string[] = [];
     
     if (body.prompts) {
@@ -17,7 +17,15 @@ export async function POST(request: Request) {
       throw new Error('No prompts provided in request');
     }
 
-    console.log('Processed prompts:', prompts);
+    // Validate prompts
+    prompts = prompts.map((prompt, index) => {
+      if (typeof prompt !== 'string') {
+        throw new Error(`Invalid prompt at index ${index}: must be a string`);
+      }
+      return prompt.trim();
+    });
+
+    console.log('Validated prompts:', prompts);
 
     if (prompts.length === 0) {
       throw new Error('Empty prompts array');
@@ -35,8 +43,8 @@ export async function POST(request: Request) {
     
     for (const prompt of prompts) {
       try {
-        console.log('Processing individual prompt:', prompt);
-        // Create prediction with exact API structure
+        console.log('Processing prompt:', prompt);
+        
         const prediction = await replicate.predictions.create({
           version: "1eaac30a6af4d4b1ef8f18b51aa1b88b4fba01b58490028c2ddf34cd6ffd5f86",
           input: {
@@ -49,27 +57,37 @@ export async function POST(request: Request) {
         });
 
         console.log('Prediction created:', prediction);
+        
         const result = await replicate.wait(prediction);
         console.log('Result received:', result);
         
         if (!result.output || !Array.isArray(result.output) || result.output.length === 0) {
-          throw new Error('No image generated');
+          throw new Error('Invalid response from Replicate');
         }
 
-        imageUrls.push(result.output[0]);
-        console.log('Generated URL:', result.output[0]);
+        const imageUrl = result.output[0];
+        if (typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
+          throw new Error('Invalid image URL received');
+        }
+
+        imageUrls.push(imageUrl);
+        console.log('Valid image URL generated:', imageUrl);
       } catch (error) {
         console.error('Replicate API error:', error);
         throw error;
       }
     }
 
+    console.log('All images generated successfully:', imageUrls);
     return NextResponse.json({ imageUrls });
 
   } catch (error) {
     console.error('API Route error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate images' },
+      { 
+        error: error instanceof Error ? error.message : 'Failed to generate images',
+        details: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     );
   }

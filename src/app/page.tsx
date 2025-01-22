@@ -63,9 +63,9 @@ const Home = () => {
         body: JSON.stringify({ prompts: prompts })
       });
 
-      // if (!imageResponse.ok) {
-      //   throw new Error('Failed to generate images');
-      // }
+      if (!imageResponse.ok) {
+        throw new Error('Failed to generate images');
+      }
 
       const imageData = await imageResponse.json();
       console.log('Image data received:', imageData);
