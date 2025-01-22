@@ -45,6 +45,7 @@ export default function Home() {
       }
 
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (data.imageUrl) {
         setGeneratedImage(data.imageUrl);
@@ -60,7 +61,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container">
+    <main className="container">
       {/* Title and Description */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-4">Foley Comic Generator</h1>
@@ -132,6 +133,6 @@ export default function Home() {
           {isDarkMode ? 'Light Mode' : 'Dark Mode'}
         </button>
       </div>
-    </div>
+    </main>
   );
 }
