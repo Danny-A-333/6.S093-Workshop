@@ -124,13 +124,14 @@ const Home = () => {
         return;
       }
 
-      const formattedPanels = history.map((item: HistoryItem) => ({
+      // Reverse the array to display in correct order
+      const formattedPanels = history.reverse().map((item: HistoryItem) => ({
         prompt: item.prompt,
         caption: item.caption || item.prompt,
-        imageUrl: item.image_url
+        imageUrl: item.image_url,
+        isFromHistory: true
       }));
       
-      // Set the new panels directly
       setPanels(formattedPanels);
       setHistoryPage(prev => prev + 1);
     } catch (err) {
