@@ -1,10 +1,21 @@
 'use client'
 import { useState, useEffect } from "react";
 
+const BACKEND_URL = 'https://sundai-backend-55967553950.us-east4.run.app';
+const COMICS_PER_PAGE = 3;
+
 interface ComicPanel {
   prompt: string;
   caption: string;
   imageUrl?: string;
+}
+
+// Add new interface for history response
+interface HistoryItem {
+  prompt: string;
+  caption: string;
+  image_url: string;
+  created_at: string;
 }
 
 const Home = () => {
@@ -13,6 +24,8 @@ const Home = () => {
   const [error, setError] = useState<string | null>(null);
   const [panels, setPanels] = useState<ComicPanel[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyPage, setHistoryPage] = useState(0);
 
   useEffect(() => {
     // Check for saved dark mode preference
@@ -52,6 +65,7 @@ const Home = () => {
       if (!plotData.comics || !Array.isArray(plotData.comics)) {
         throw new Error('Invalid plot data received');
       }
+
       // Extract prompts for image generation
       const prompts = plotData.comics.map((panel: { prompt: string }) => panel.prompt);
       
@@ -69,6 +83,7 @@ const Home = () => {
 
       const imageData = await imageResponse.json();
       console.log('Image data received:', imageData);
+
       // Combine plot and images
       const completePanels = plotData.comics.map((panel: { prompt: string; caption: string }, index: number) => ({
         ...panel,
@@ -81,6 +96,48 @@ const Home = () => {
       console.error('Error:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadHistory = async () => {
+    setIsLoadingHistory(true);
+    setError(null);
+    setPanels([]);
+    
+    try {
+      const skip = historyPage * COMICS_PER_PAGE;
+      const response = await fetch(`${BACKEND_URL}/history?limit=${COMICS_PER_PAGE}&skip=${skip}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load history');
+      }
+      
+      const history = await response.json() as HistoryItem[];
+      
+      if (history.length === 0) {
+        setError('No more comics to load');
+        return;
+      }
+
+      const formattedPanels = history.map((item: HistoryItem) => ({
+        prompt: item.prompt,
+        caption: item.caption || item.prompt,
+        imageUrl: item.image_url
+      }));
+      
+      // Set the new panels directly
+      setPanels(formattedPanels);
+      setHistoryPage(prev => prev + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load history');
+      console.error('History error:', err);
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
 
@@ -108,14 +165,30 @@ const Home = () => {
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 hover:bg-blue-600"
+            className={`w-full px-4 py-2 rounded-lg disabled:opacity-50 
+              ${isDarkMode 
+                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                : 'bg-blue-500 text-white hover:bg-blue-600'}`}
           >
             {isLoading ? 'Generating...' : 'Generate Comic'}
+          </button>
+
+          <button
+            onClick={loadHistory}
+            disabled={isLoadingHistory}
+            className={`w-full px-4 py-2 rounded-lg disabled:opacity-50 
+              ${isDarkMode 
+                ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                : 'bg-gray-200 text-gray-900 hover:bg-gray-300'}`}
+          >
+            {isLoadingHistory ? 'Loading History...' : 'Load More Comics'}
           </button>
         </div>
 
         {error && (
-          <p className="text-red-500 text-center mt-4">{error}</p>
+          <div className="text-red-500 mb-4">
+            {error}
+          </div>
         )}
 
         {panels.length > 0 && (

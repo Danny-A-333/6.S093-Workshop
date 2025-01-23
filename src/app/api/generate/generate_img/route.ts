@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 
+const BACKEND_URL = 'https://sundai-backend-55967553950.us-east4.run.app';
+
 export const maxDuration = 45;
 
 export async function POST(request: Request) {
@@ -71,6 +73,38 @@ export async function POST(request: Request) {
         const imageUrl = result.output[0];
         if (typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
           throw new Error('Invalid image URL received');
+        }
+
+        // Save to backend database without re-uploading to GCS
+        try {
+          console.log('Saving to backend:', { prompt, imageUrl });
+          const saveResponse = await fetch(`${BACKEND_URL}/save`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+              prompt: prompt,
+              image_url: imageUrl, // Use the Replicate URL directly
+            }),
+          });
+
+          const responseText = await saveResponse.text();
+          console.log('Backend response:', responseText);
+
+          if (!saveResponse.ok) {
+            console.error('Failed to save to backend:', responseText);
+          } else {
+            try {
+              const jsonResponse = JSON.parse(responseText);
+              console.log('Successfully saved to backend:', jsonResponse);
+            } catch (e) {
+              console.error('Error parsing backend response:', e);
+            }
+          }
+        } catch (saveError) {
+          console.error('Error saving to backend:', saveError);
         }
 
         imageUrls.push(imageUrl);
